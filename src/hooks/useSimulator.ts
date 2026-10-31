@@ -1,0 +1,101 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { createCpu, hex, tick, type CpuState, type TickInfo } from '../sap1/cpu';
+
+export type Mode = 'idle' | 'step' | 'run';
+
+/** Safety net so a program without HLT cannot run forever. */
+const MAX_INSTRUCTIONS = 256;
+/** Milliseconds per T-state while stepping/running. */
+const CLOCK_MS = 350;
+
+export function useSimulator() {
+  const cpuRef = useRef<CpuState>(createCpu());
+
+  const [cpu, setCpu] = useState<CpuState>(cpuRef.current);
+  const [last, setLast] = useState<TickInfo | null>(null);
+  const [mode, setMode] = useState<Mode>('idle');
+  const [loaded, setLoaded] = useState(false);
+  const [labels, setLabels] = useState<string[]>(() => Array(16).fill(''));
+  const [notice, setNotice] = useState<string | null>(null);
+
+  /** Execute one T-state. Returns true when the current mode should stop afterwards. */
+  const advance = useCallback((m: Mode): boolean => {
+    const before = cpuRef.current;
+    if (before.halted) return true;
+
+    const [next, info] = tick(before);
+    cpuRef.current = next;
+    setCpu(next);
+    setLast(info);
+
+    if (next.halted) return true;
+    if (m === 'step' && next.t === 1) return true; // instruction finished
+    if (m === 'run' && next.instructionCount >= MAX_INSTRUCTIONS) {
+      setNotice(`Stopped after ${MAX_INSTRUCTIONS} instructions without HLT.`);
+      return true;
+    }
+    return false;
+  }, []);
+
+  // Clock: one T-state per interval while stepping/running.
+  useEffect(() => {
+    if (mode === 'idle') return;
+    const id = setInterval(() => {
+      if (advance(mode)) setMode('idle');
+    }, CLOCK_MS);
+    return () => clearInterval(id);
+  }, [mode, advance]);
+
+  const start = useCallback(
+    (m: Mode) => {
+      setNotice(null);
+      if (advance(m)) return;
+      setMode(m);
+    },
+    [advance],
+  );
+
+  const loadProgram = useCallback((ram: number[], programLabels: string[]) => {
+    const fresh = createCpu(ram);
+    cpuRef.current = fresh;
+    setCpu(fresh);
+    setLast(null);
+    setMode('idle');
+    setNotice(null);
+    setLabels(programLabels);
+    setLoaded(true);
+  }, []);
+
+  /** Clears every register and the RAM, and returns the simulator to power-on state. */
+  const reset = useCallback(() => {
+    const fresh = createCpu();
+    cpuRef.current = fresh;
+    setCpu(fresh);
+    setLast(null);
+    setMode('idle');
+    setNotice(null);
+    setLabels(Array(16).fill(''));
+    setLoaded(false);
+  }, []);
+
+  const pause = useCallback(() => setMode('idle'), []);
+
+  const status = !loaded
+    ? 'No program loaded'
+    : cpu.error
+      ? cpu.error
+      : cpu.halted
+        ? `Halted — output ${hex(cpu.out)}H`
+        : mode === 'run'
+          ? 'Running…'
+          : mode === 'step'
+            ? 'Stepping…'
+            : 'Ready';
+
+  return {
+    cpu, last, mode, loaded, labels, notice, status,
+    step: () => start('step'),
+    run: () => start('run'),
+    pause, reset, loadProgram,
+  };
+}
