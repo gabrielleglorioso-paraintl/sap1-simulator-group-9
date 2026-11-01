@@ -20,7 +20,7 @@ export function Controls(p: Props) {
       <h2>Controls</h2>
       <div className="btnrow">
         <button onClick={p.onStep} disabled={!canAct} title="Execute one instruction">Step</button>
-        <button onClick={p.onTState} disabled={!canAct} title="Advance one T-state">T-State</button>
+        <button onClick={p.onTState} disabled={!canAct} title="Advance one T-state">Micro-Step</button>
         {p.mode === 'run' ? (
           <button onClick={p.onPause}>Pause</button>
         ) : (
