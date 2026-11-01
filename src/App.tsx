@@ -36,6 +36,7 @@ export default function App() {
           status={sim.status}
           notice={sim.notice}
           onStep={sim.step}
+          onTState={sim.tState}
           onRun={sim.run}
           onPause={sim.pause}
           onReset={() => {

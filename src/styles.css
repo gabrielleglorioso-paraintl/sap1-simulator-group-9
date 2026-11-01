@@ -36,7 +36,7 @@ h2 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: v
 button { font: inherit; font-weight: 500; padding: 8px 14px; border: 1px solid var(--accent); background: #fff; color: var(--accent); border-radius: 4px; cursor: pointer; }
 button:hover:not(:disabled) { background: var(--accent-soft); }
 button:disabled { opacity: .4; cursor: not-allowed; }
-.btnrow { display: flex; gap: 8px; } .btnrow button { flex: 1; }
+.btnrow { display: flex; gap: 8px; } .btnrow button { flex: 1 1 auto; min-width: 0; padding-inline: 8px; white-space: nowrap; }
 .btnrow button:first-child, .loader__go button { background: var(--accent); color: #fff; }
 .btnrow button:first-child:hover:not(:disabled), .loader__go button:hover:not(:disabled) { background: #0b5f58; }
 .status { margin: 10px 0 0; padding: 6px 8px; background: var(--accent-soft); border-radius: 4px; font-family: var(--mono); font-size: 12px; }

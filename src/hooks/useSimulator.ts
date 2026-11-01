@@ -100,6 +100,10 @@ export function useSimulator() {
     clockSpeed, setClockSpeed,
     minClockSpeed: MIN_CLOCK_SPEED, maxClockSpeed: MAX_CLOCK_SPEED,
     step: () => start('step'),
+    tState: () => {
+      setNotice(null);
+      advance('idle');
+    },
     run: () => start('run'),
     pause, reset, loadProgram,
   };
