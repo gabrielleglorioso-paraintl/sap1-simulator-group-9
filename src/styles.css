@@ -150,3 +150,30 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 .mem td { padding: 3px 5px; border-bottom: 1px solid #edf1f3; } .mem__addr { font-family: var(--mono); white-space: nowrap; }
 .mem__row--mar { background: #fef3c7; } .mem__row--read { background: var(--accent-soft); }
 .mem__pc { margin-left: 6px; background: var(--accent); color: #fff; font-size: 9px; padding: 1px 4px; border-radius: 3px; }
+
+/* Clickable help manual */
+.help-button { margin-left: auto; padding: 5px 12px; font-weight: 700; }
+.manual-backdrop { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 20px; background: #10182099; }
+.manual { width: min(880px, 100%); max-height: min(82vh, 760px); overflow: hidden; padding: 0; border-radius: 10px; box-shadow: 0 20px 60px #0004; }
+.manual__header { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 22px; border-bottom: 1px solid var(--line); }
+.manual__header h2 { margin: 0; font-size: 18px; }
+.manual__eyebrow { margin: 0 0 4px; color: var(--muted); font: 700 10px var(--mono); letter-spacing: .12em; }
+.manual__close { flex: 0 0 auto; }
+.manual__body { display: grid; grid-template-columns: 1fr; max-height: calc(min(82vh, 760px) - 72px); overflow: auto; }
+.manual__content { padding: 8px 24px 24px; }
+.manual__content section { padding-top: 14px; scroll-margin-top: 12px; }
+.manual__content h3 { margin: 0 0 8px; font-family: var(--head); font-size: 14px; }
+.manual__content p, .manual__content li, .manual__content dd { color: #34434e; }
+.manual__content ol, .manual__content ul { padding-left: 22px; }
+.manual__content li { margin: 5px 0; }
+.manual__content dl { display: grid; grid-template-columns: max-content 1fr; gap: 7px 14px; margin: 10px 0; }
+.manual__content dt { font-weight: 700; }
+.manual__content dd { margin: 0; }
+.manual__content code { font-family: var(--mono); color: #5533a5; }
+@media (max-width: 620px) {
+  .manual-backdrop { padding: 8px; }
+  .manual__body { grid-template-columns: 1fr; }
+  .manual__content { padding: 0 16px 20px; }
+  .manual__content dl { grid-template-columns: 1fr; gap: 2px; }
+  .manual__content dd { margin: 0 0 8px; }
+}
