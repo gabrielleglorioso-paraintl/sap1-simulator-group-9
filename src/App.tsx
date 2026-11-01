@@ -14,44 +14,41 @@ export default function App() {
     <div className="app">
       <header className="app__header">
         <h1>SAP-1 Simulator</h1>
-        
+        <span className="app__group">Group 9</span>
       </header>
 
-      <main className="layout">
-        <div className="col col--left">
-          <ProgramLoader
-            disabled={sim.mode !== 'idle'}
-            onLoad={(ram, labels, exp) => {
-              sim.loadProgram(ram, labels);
-              setExpected(exp);
-            }}
-            loadedExpected={sim.loaded ? expected : null}
-            out={sim.cpu.out}
-            halted={sim.cpu.halted && !sim.cpu.error}
-          />
-          <Controls
-            mode={sim.mode}
-            loaded={sim.loaded}
-            halted={sim.cpu.halted}
-            status={sim.status}
-            notice={sim.notice}
-            onStep={sim.step}
-            onRun={sim.run}
-            onPause={sim.pause}
-            onReset={() => {
-              sim.reset();
-              setExpected(null);
-            }}
-          />
-        </div>
+      <section className="topbar">
+        <ProgramLoader
+          disabled={sim.mode !== 'idle'}
+          onLoad={(ram, labels, exp) => {
+            sim.loadProgram(ram, labels);
+            setExpected(exp);
+          }}
+          loadedExpected={sim.loaded ? expected : null}
+          out={sim.cpu.out}
+          halted={sim.cpu.halted && !sim.cpu.error}
+        />
+        <Controls
+          mode={sim.mode}
+          loaded={sim.loaded}
+          halted={sim.cpu.halted}
+          status={sim.status}
+          notice={sim.notice}
+          onStep={sim.step}
+          onRun={sim.run}
+          onPause={sim.pause}
+          onReset={() => {
+            sim.reset();
+            setExpected(null);
+          }}
+        />
+      </section>
 
-        <div className="col col--center">
+      <main className="layout">
+        <MemoryTable cpu={sim.cpu} last={sim.last} labels={sim.labels} />
+        <div className="col">
           <BlockDiagram cpu={sim.cpu} last={sim.last} />
           <LedRow value={sim.cpu.out} />
-        </div>
-
-        <div className="col col--right">
-          <MemoryTable cpu={sim.cpu} last={sim.last} labels={sim.labels} />
         </div>
       </main>
     </div>
