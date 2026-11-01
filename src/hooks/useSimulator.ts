@@ -5,8 +5,10 @@ export type Mode = 'idle' | 'step' | 'run';
 
 /** Safety net so a program without HLT cannot run forever. */
 const MAX_INSTRUCTIONS = 256;
-/** Milliseconds per T-state while stepping/running. */
-const CLOCK_MS = 350;
+/** Clock speed range in T-states per second. */
+const MIN_CLOCK_SPEED = 1;
+const MAX_CLOCK_SPEED = 10;
+const DEFAULT_CLOCK_SPEED = 3;
 
 export function useSimulator() {
   const cpuRef = useRef<CpuState>(createCpu());
@@ -17,6 +19,7 @@ export function useSimulator() {
   const [loaded, setLoaded] = useState(false);
   const [labels, setLabels] = useState<string[]>(() => Array(16).fill(''));
   const [notice, setNotice] = useState<string | null>(null);
+  const [clockSpeed, setClockSpeed] = useState(DEFAULT_CLOCK_SPEED);
 
   /** Execute one T-state. Returns true when the current mode should stop afterwards. */
   const advance = useCallback((m: Mode): boolean => {
@@ -42,9 +45,9 @@ export function useSimulator() {
     if (mode === 'idle') return;
     const id = setInterval(() => {
       if (advance(mode)) setMode('idle');
-    }, CLOCK_MS);
+    }, 1000 / clockSpeed);
     return () => clearInterval(id);
-  }, [mode, advance]);
+  }, [mode, advance, clockSpeed]);
 
   const start = useCallback(
     (m: Mode) => {
@@ -94,6 +97,8 @@ export function useSimulator() {
 
   return {
     cpu, last, mode, loaded, labels, notice, status,
+    clockSpeed, setClockSpeed,
+    minClockSpeed: MIN_CLOCK_SPEED, maxClockSpeed: MAX_CLOCK_SPEED,
     step: () => start('step'),
     run: () => start('run'),
     pause, reset, loadProgram,

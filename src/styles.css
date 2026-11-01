@@ -26,6 +26,11 @@ h2 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: v
 .topbar { display: grid; grid-template-columns: 1fr 280px; gap: 12px; align-items: stretch; }
 .layout { display: grid; grid-template-columns: 330px 1fr; gap: 12px; align-items: start; }
 .col { display: grid; gap: 12px; min-width: 0; }
+.memory-col { display: grid; gap: 12px; min-width: 0; }
+.clock-speed__control { display: grid; gap: 8px; }
+.clock-speed__value { font: 700 13px var(--mono); }
+.clock-speed input[type="range"] { display: block; width: 100%; margin: 0; accent-color: var(--accent); }
+.clock-speed__limits { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
 @media (max-width: 900px) { .topbar, .layout { grid-template-columns: 1fr; } }
 
 button { font: inherit; font-weight: 500; padding: 8px 14px; border: 1px solid var(--accent); background: #fff; color: var(--accent); border-radius: 4px; cursor: pointer; }
@@ -78,9 +83,49 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 
 /* LEDs */
 .leds { display: flex; gap: 6px; justify-content: space-between; margin-bottom: 8px; }
-.led-cell { flex: 1; display: grid; justify-items: center; gap: 4px; font-family: var(--mono); }
-.led { width: 100%; max-width: 36px; aspect-ratio: 1; border-radius: 50%; background: #e4e9ec; border: 2px solid #9aa7b1; }
-.led--on { background: var(--on); border-color: #991b1b; box-shadow: 0 0 10px var(--on); }
+.led-cell { flex: 1; display: grid; justify-items: center; gap: 6px; font-family: var(--mono); }
+.led {
+  position: relative;
+  width: 100%;
+  max-width: 36px;
+  aspect-ratio: 1;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 38% 29%, #652a30 0, #36171c 30%, #210e12 70%, #10090b 100%) padding-box,
+    linear-gradient(145deg, #c1c9c8 0, #525c5e 20%, #252c2e 48%, #aab2b0 70%, #363d3e 100%) border-box;
+  box-shadow: inset 0 2px 5px #050607d9, inset 0 -1px 2px #ffbec31a, 0 2px 3px #0004;
+  transition: background 160ms ease, box-shadow 160ms ease;
+}
+.led::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 38% 28%, #ffffff24, transparent 52%);
+  pointer-events: none;
+}
+.led::after {
+  content: '';
+  position: absolute;
+  top: 15%;
+  left: 22%;
+  width: 36%;
+  height: 19%;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffffffa8, #ffffff14);
+  filter: blur(.35px);
+  transform: rotate(-35deg);
+  pointer-events: none;
+}
+.led--on {
+  background:
+    radial-gradient(ellipse at 38% 29%, #fff5dc 0, #ffc1a5 10%, #ff6559 27%, #ed2733 48%, #a70d1b 78%, #4d0710 100%) padding-box,
+    linear-gradient(145deg, #e6d2c9 0, #9d5552 22%, #562529 48%, #e5aaa0 70%, #6d3030 100%) border-box;
+  box-shadow: inset 0 1px 3px #fff9, inset 0 -4px 6px #5d0614b8, 0 0 5px 1px #ef444480, 0 0 13px 3px #ef44444d;
+}
+.led--on::before { background: radial-gradient(ellipse at 38% 28%, #fff7df77, #ff968536 32%, transparent 68%); }
+.led--on::after { background: linear-gradient(180deg, #fffffff2, #ffffff28); }
 
 /* Memory */
 .mem { width: 100%; border-collapse: collapse; font-size: 12px; }

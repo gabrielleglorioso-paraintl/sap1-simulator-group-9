@@ -5,6 +5,7 @@ import { MemoryTable } from './components/MemoryTable';
 import { LedRow } from './components/LedRow';
 import { Controls } from './components/Controls';
 import { ProgramLoader } from './components/ProgramLoader';
+import { ClockSpeed } from './components/ClockSpeed';
 
 export default function App() {
   const sim = useSimulator();
@@ -45,7 +46,15 @@ export default function App() {
       </section>
 
       <main className="layout">
-        <MemoryTable cpu={sim.cpu} last={sim.last} labels={sim.labels} />
+        <div className="memory-col">
+          <MemoryTable cpu={sim.cpu} last={sim.last} labels={sim.labels} />
+          <ClockSpeed
+            value={sim.clockSpeed}
+            min={sim.minClockSpeed}
+            max={sim.maxClockSpeed}
+            onChange={sim.setClockSpeed}
+          />
+        </div>
         <div className="col">
           <BlockDiagram cpu={sim.cpu} last={sim.last} />
           <LedRow value={sim.cpu.out} />
