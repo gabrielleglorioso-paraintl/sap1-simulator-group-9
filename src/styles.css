@@ -26,6 +26,11 @@ h2 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: v
 .topbar { display: grid; grid-template-columns: 1fr 280px; gap: 12px; align-items: stretch; }
 .layout { display: grid; grid-template-columns: 330px 1fr; gap: 12px; align-items: start; }
 .col { display: grid; gap: 12px; min-width: 0; }
+.memory-col { display: grid; gap: 12px; min-width: 0; }
+.clock-speed__control { display: grid; gap: 8px; }
+.clock-speed__value { font: 700 13px var(--mono); }
+.clock-speed input[type="range"] { display: block; width: 100%; margin: 0; accent-color: var(--accent); }
+.clock-speed__limits { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
 @media (max-width: 900px) { .topbar, .layout { grid-template-columns: 1fr; } }
 
 button { font: inherit; font-weight: 500; padding: 8px 14px; border: 1px solid var(--accent); background: #fff; color: var(--accent); border-radius: 4px; cursor: pointer; }
