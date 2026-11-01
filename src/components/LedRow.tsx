@@ -12,7 +12,7 @@ export function LedRow({ value }: { value: number }) {
           </div>
         ))}
       </div>
-      <p className="mono center">{bin(value >> 4, 4)} {bin(value & 0xf, 4)} = {hex(value)}H</p>
+      <p className="mono center">{bin(value >> 4, 4)} {bin(value & 0xf, 4)} = {hex(value)}H = {value}</p>
     </section>
   );
 }
