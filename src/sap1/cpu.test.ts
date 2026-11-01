@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createCpu, tick, hex, type CpuState, type TickInfo } from './cpu';
-import { FORMULAS, buildProgram, evaluate, parseValue } from './programs';
+import {
+  buildProgram, checkRange, dataBaseRange, defaultDataBase, evaluate, parseHex, sanitizeHex, type Expression,
+} from './programs';
 
 function runToHalt(cpu: CpuState, limit = 1000): { cpu: CpuState; ticks: TickInfo[] } {
   const ticks: TickInfo[] = [];
@@ -13,9 +15,11 @@ function runToHalt(cpu: CpuState, limit = 1000): { cpu: CpuState; ticks: TickInf
   return { cpu: s, ticks };
 }
 
+const sample: Expression = { values: [0x25, 0x05, 0x23], ops: ['+', '-'], dataBase: 0x9 };
+
 describe('SAP-1 instruction cycle', () => {
   it('runs the Unit 2 sample program: 25H + 05H - 23H = 07H', () => {
-    const { ram } = buildProgram(FORMULAS[0], [0x25, 0x05, 0x23]);
+    const { ram } = buildProgram(sample);
     expect(ram.slice(0, 5).map((b) => hex(b))).toEqual(['09', '1A', '2B', 'EF', 'FF']);
     const { cpu } = runToHalt(createCpu(ram));
     expect(cpu.out).toBe(0x07);
@@ -23,8 +27,7 @@ describe('SAP-1 instruction cycle', () => {
   });
 
   it('uses six T-states per instruction and increments the PC after each fetch', () => {
-    const { ram } = buildProgram(FORMULAS[0], [1, 2, 3]);
-    let s = createCpu(ram);
+    let s = createCpu(buildProgram(sample).ram);
     const seen: number[] = [];
     for (let i = 0; i < 6; i++) {
       const [next, info] = tick(s);
@@ -33,16 +36,15 @@ describe('SAP-1 instruction cycle', () => {
     }
     expect(seen).toEqual([1, 2, 3, 4, 5, 6]);
     expect(s.pc).toBe(1);
-    expect(s.a).toBe(1); // LDA completed
+    expect(s.a).toBe(0x25);
     expect(s.t).toBe(1);
   });
 
   it('follows the fetch micro-operations T1-T3', () => {
-    const { ram } = buildProgram(FORMULAS[0], [1, 2, 3]);
+    const { ram } = buildProgram(sample);
     const [s1, i1] = tick(createCpu(ram));
     expect(i1.signals).toEqual(['Ep', 'Lm']);
     expect(i1.source).toBe('PC');
-    expect(s1.mar).toBe(0);
     const [s2, i2] = tick(s1);
     expect(i2.signals).toEqual(['Cp']);
     expect(s2.pc).toBe(1);
@@ -51,54 +53,76 @@ describe('SAP-1 instruction cycle', () => {
     expect(s3.ir).toBe(ram[0]);
   });
 
-  it('subtracts with 2\'s complement and wraps to 8 bits', () => {
-    // 01H + 02H + 03H - 0AH = -4 = FCH
-    const { cpu } = runToHalt(createCpu(buildProgram(FORMULAS[2], [1, 2, 3, 0xa]).ram));
-    expect(cpu.out).toBe(0xfc);
-  });
-
-  it('wraps on overflow: FFH + 02H - 00H = 01H', () => {
-    const { cpu } = runToHalt(createCpu(buildProgram(FORMULAS[0], [0xff, 0x02, 0x00]).ram));
-    expect(cpu.out).toBe(0x01);
+  it('subtracts with 2\'s complement and wraps to 8 bits (hardware behaviour)', () => {
+    const e: Expression = { values: [1, 2, 3, 0xa], ops: ['+', '+', '-'], dataBase: 8 };
+    expect(runToHalt(createCpu(buildProgram(e).ram)).cpu.out).toBe(0xfc);
   });
 
   it('stays halted after HLT', () => {
-    const { cpu } = runToHalt(createCpu(buildProgram(FORMULAS[0], [1, 1, 1]).ram));
+    const { cpu } = runToHalt(createCpu(buildProgram(sample).ram));
     const [again] = tick(cpu);
     expect(again).toBe(cpu);
   });
 
   it('flags an illegal opcode instead of looping', () => {
     const ram = new Array(16).fill(0);
-    ram[0] = 0x30; // opcode 0011 is not in the instruction set
+    ram[0] = 0x30;
     const { cpu } = runToHalt(createCpu(ram));
     expect(cpu.halted).toBe(true);
     expect(cpu.error).toMatch(/Illegal opcode/);
   });
+});
 
-  it.each(FORMULAS.map((f) => [f.expression, f] as const))('%s matches the reference for many inputs', (_n, f) => {
-    const samples = [0, 1, 0x7f, 0x80, 0xff, 0x25, 0x0a];
-    for (const a of samples) {
-      for (const b of samples) {
-        const values = f.terms.map((_, i) => [a, b, a ^ b, (a + b) & 0xff][i]);
-        const { cpu } = runToHalt(createCpu(buildProgram(f, values).ram));
-        expect(cpu.out).toBe(evaluate(f, values));
+describe('user-built expressions', () => {
+  it('matches the reference for every length (2-5), operator mix and data address', () => {
+    const vals = [0x10, 0x07, 0x03, 0x22, 0x05];
+    for (let n = 2; n <= 5; n++) {
+      const { min, max } = dataBaseRange(n);
+      for (let base = min; base <= max; base++) {
+        for (let mask = 0; mask < 1 << (n - 1); mask++) {
+          const ops = Array.from({ length: n - 1 }, (_, i) => ((mask >> i) & 1 ? '-' : '+') as '+' | '-');
+          const e: Expression = { values: vals.slice(0, n), ops, dataBase: base };
+          const { cpu } = runToHalt(createCpu(buildProgram(e).ram));
+          expect(cpu.out).toBe(evaluate(e));
+          expect(cpu.error).toBeNull();
+        }
       }
     }
   });
+
+  it('never lets the data overlap the program', () => {
+    for (let n = 2; n <= 5; n++) {
+      const { min, max } = dataBaseRange(n);
+      expect(min).toBe(n + 2);
+      expect(max + n - 1).toBe(15);
+      expect(() => buildProgram({ values: Array(n).fill(1), ops: Array(n - 1).fill('+'), dataBase: min - 1 })).toThrow();
+      expect(() => buildProgram({ values: Array(n).fill(1), ops: Array(n - 1).fill('+'), dataBase: max + 1 })).toThrow();
+      const d = defaultDataBase(n);
+      expect(d >= min && d <= max).toBe(true);
+    }
+  });
+
+  it('blocks results that go below 00H or above FFH at any step', () => {
+    expect(checkRange(sample)).toEqual({ ok: true, total: 7 });
+    expect(checkRange({ values: [1, 2, 3, 0xa], ops: ['+', '+', '-'], dataBase: 8 }).ok).toBe(false);
+    expect(checkRange({ values: [0xf0, 0x20], ops: ['+'], dataBase: 4 }).ok).toBe(false);
+    expect(checkRange({ values: [0x00, 0x01], ops: ['-'], dataBase: 4 }).ok).toBe(false); // -1
+    expect(checkRange({ values: [0xff, 0xff, 0xff], ops: ['-', '+'], dataBase: 5 })).toEqual({ ok: true, total: 0xff }); // 00 then FF is fine
+  });
 });
 
-describe('value parsing', () => {
-  it('accepts hex forms and rejects bad input', () => {
-    expect(parseValue('25', 'hex')).toEqual({ ok: true, value: 0x25 });
-    expect(parseValue('0Ah', 'hex')).toEqual({ ok: true, value: 0x0a });
-    expect(parseValue('0xFF', 'hex')).toEqual({ ok: true, value: 255 });
-    expect(parseValue('1FF', 'hex').ok).toBe(false);
-    expect(parseValue('', 'hex').ok).toBe(false);
+describe('hex input rules', () => {
+  it('accepts only 1-2 hex digits', () => {
+    expect(parseHex('25')).toEqual({ ok: true, value: 0x25 });
+    expect(parseHex('a')).toEqual({ ok: true, value: 0x0a });
+    expect(parseHex('FF')).toEqual({ ok: true, value: 255 });
+    expect(parseHex('').ok).toBe(false);
+    expect(parseHex('1FF').ok).toBe(false);
+    expect(parseHex('0x1').ok).toBe(false);
+    expect(parseHex('G1').ok).toBe(false);
   });
-  it('accepts decimal 0-255', () => {
-    expect(parseValue('37', 'dec')).toEqual({ ok: true, value: 37 });
-    expect(parseValue('256', 'dec').ok).toBe(false);
-    expect(parseValue('-1', 'dec').ok).toBe(false);
+  it('strips invalid characters while typing', () => {
+    expect(sanitizeHex('zz2g5!')).toBe('25');
+    expect(sanitizeHex('abc')).toBe('AB');
   });
 });

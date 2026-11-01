@@ -37,17 +37,20 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 .status { margin: 10px 0 0; padding: 6px 8px; background: var(--accent-soft); border-radius: 4px; font-family: var(--mono); font-size: 12px; }
 .hint { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
 
-/* Load program: horizontal inside the top bar */
-.loader__row { display: flex; flex-wrap: wrap; gap: 8px 32px; align-items: flex-start; }
-.loader__group { min-width: 0; }
-.loader__go { margin-left: auto; align-self: flex-end; max-width: 200px; }
-.loader__inputs { display: flex; gap: 12px; flex-wrap: wrap; }
-.label { margin: 0 0 4px; font-weight: 700; font-size: 12px; color: var(--muted); }
-.formula { display: block; padding: 1px 0; font-family: var(--mono); }
-.input { display: grid; grid-template-columns: 14px 56px 12px; gap: 4px; align-items: center; font-family: var(--mono); }
-.input input { padding: 5px; font: inherit; border: 1px solid #8a99a5; border-radius: 4px; width: 100%; }
-.input input[aria-invalid="true"] { border-color: var(--on); }
-.err { grid-column: 1 / -1; color: var(--on); font-size: 11px; font-style: normal; }
+/* Load program: formula builder in the top bar */
+.terms { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin-bottom: 10px; }
+.term { display: flex; align-items: center; gap: 6px; }
+.term__spacer { width: 0; }
+.term select, .addr select { font: inherit; padding: 5px 6px; border: 1px solid #8a99a5; border-radius: 4px; background: #fff; }
+.term__x { padding: 2px 8px; line-height: 1; }
+.term__add { padding: 5px 10px; font-size: 13px; }
+.input { display: grid; grid-template-columns: 14px 44px 12px; gap: 4px; align-items: center; font-family: var(--mono); }
+.input input { padding: 5px; font: inherit; border: 1px solid #8a99a5; border-radius: 4px; width: 100%; text-transform: uppercase; }
+.input input[aria-invalid="true"] { border-color: var(--on); background: #fef2f2; }
+.loader__row { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; }
+.addr { display: flex; align-items: center; gap: 6px; } .addr small { color: var(--muted); }
+.preview { margin: 0; font-size: 15px; font-weight: 700; flex: 1; min-width: 160px; }
+.err { margin: 8px 0 0; color: var(--on); font-size: 12px; }
 
 /* Bus banner + diagram */
 .busbanner { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; padding: 6px 10px; border: 2px solid var(--line); border-radius: 4px; font-family: var(--mono); }
