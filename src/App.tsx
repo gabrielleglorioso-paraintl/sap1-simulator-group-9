@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { HelpManual } from './components/HelpManual';
 import { useSimulator } from './hooks/useSimulator';
 import { BlockDiagram } from './components/BlockDiagram';
 import { MemoryTable } from './components/MemoryTable';
@@ -10,13 +11,17 @@ import { ClockSpeed } from './components/ClockSpeed';
 export default function App() {
   const sim = useSimulator();
   const [expected, setExpected] = useState<number | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   return (
     <div className="app">
       <header className="app__header">
         <h1>SAP-1 Simulator</h1>
         <span className="app__group">Group 9</span>
+        <button type="button" className="help-button" onClick={() => setHelpOpen(true)} aria-haspopup="dialog">Help</button>
       </header>
+
+      {helpOpen && <HelpManual onClose={() => setHelpOpen(false)} />}
 
       <section className="topbar">
         <ProgramLoader
@@ -64,3 +69,4 @@ export default function App() {
     </div>
   );
 }
+
