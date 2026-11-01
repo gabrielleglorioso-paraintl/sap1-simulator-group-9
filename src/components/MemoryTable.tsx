@@ -14,10 +14,10 @@ export function MemoryTable({ cpu, last, labels }: Props) {
       <table className="mem">
         <thead>
           <tr>
-            <th>Addr</th>
-            <th>Binary</th>
-            <th>Hex</th>
-            <th>Meaning</th>
+            <th>ADDR</th>
+            <th>MEANING</th>
+            <th>BINARY</th>
+            <th>HEX</th>
           </tr>
         </thead>
         <tbody>
@@ -30,9 +30,9 @@ export function MemoryTable({ cpu, last, labels }: Props) {
                   {hex(addr, 1)}H
                   {isPc && <span className="mem__pc" title="Program counter points here">PC</span>}
                 </td>
+                <td className="mem__label">{labels[addr]}</td>
                 <td className="mono">{`${bin(word >> 4, 4)} ${bin(word & 0xf, 4)}`}</td>
                 <td className="mono">{hex(word)}H</td>
-                <td className="mem__label">{labels[addr]}</td>
               </tr>
             );
           })}
