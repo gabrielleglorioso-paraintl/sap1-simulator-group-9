@@ -17,7 +17,7 @@ body { margin: 0; background: #f6f8f9; color: var(--ink); font: 14px/1.4 'Space 
 h1, h2 { font-family: var(--head); margin: 0; }
 h2 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
 
-.app { max-width: 1200px; margin: 0 auto; padding: 16px; display: grid; gap: 12px; }
+.app { width: 100%; min-height: 100vh; margin: 0; padding: 16px; display: grid; align-content: start; gap: 12px; }
 .app__header { display: flex; align-items: baseline; gap: 12px; border-bottom: 3px solid var(--accent); padding-bottom: 8px; }
 .app__header h1 { font-size: 22px; font-weight: 800; }
 .app__group { font-family: var(--head); font-weight: 600; color: var(--accent); }
