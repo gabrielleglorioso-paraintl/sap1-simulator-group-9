@@ -177,3 +177,47 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   .manual__content dl { grid-template-columns: 1fr; gap: 2px; }
   .manual__content dd { margin: 0 0 8px; }
 }
+
+/* Mobile: keep Controls pinned on top with the registers/W-bus and the LEDs right below it */
+@media (max-width: 900px) {
+  .app { padding: 8px; gap: 8px; }
+  .app__header { padding-bottom: 6px; }
+  .app__header h1 { font-size: 18px; }
+
+  /* Let Controls and Load Program become direct grid items so Controls can stick to the top of the page */
+  .topbar { display: contents; }
+  .topbar > .panel:last-child { position: sticky; top: 0; z-index: 10; box-shadow: 0 4px 10px #0002; padding: 8px; }
+  .topbar > .panel:last-child h2 { display: none; }
+  .topbar > .panel:last-child .btnrow { gap: 6px; }
+  .topbar > .panel:last-child .btnrow button { padding: 7px 4px; font-size: 13px; }
+  .topbar > .panel:last-child .status { margin-top: 6px; padding: 4px 6px; }
+
+  /* Diagram and LEDs first, memory and clock speed after them */
+  .layout { gap: 8px; }
+  .layout > .col { order: -1; gap: 8px; }
+  .panel { padding: 8px; }
+  .panel > h2 { margin-bottom: 4px; font-size: 11px; }
+
+  /* Compact W-bus diagram */
+  .busbanner { padding: 4px 8px; gap: 2px 10px; }
+  .busbanner__value { font-size: 15px; }
+  .step-text { margin: 4px 0 6px; font-size: 12px; min-height: 0; }
+  .diagram { grid-template-columns: minmax(0, 1fr) 26px minmax(0, 1fr); row-gap: 6px; }
+  .diagram__bus { width: 6px; }
+  .reg { padding: 3px 6px; }
+  .reg::after { width: 13px; }
+  .reg__cap { display: none; }
+  .reg__name { font-size: 12px; }
+  .reg__head { gap: 4px; flex-wrap: nowrap; }
+  .reg__bin { font-size: 14px; }
+  .reg__hex { font-size: 11px; }
+  .reg__mnem { margin-left: 4px; }
+  .tag { font-size: 8px; padding: 0 3px; }
+
+  /* Compact LEDs */
+  .leds { gap: 4px; margin-bottom: 4px; }
+  .led-cell { gap: 2px; font-size: 12px; }
+  .led { max-width: 26px; }
+
+  .memory-col { gap: 8px; }
+}
