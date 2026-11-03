@@ -7,6 +7,7 @@ import { LedRow } from './components/LedRow';
 import { Controls } from './components/Controls';
 import { ProgramLoader } from './components/ProgramLoader';
 import { ClockSpeed } from './components/ClockSpeed';
+import { StepInfo } from './components/StepInfo';
 
 export default function App() {
   const sim = useSimulator();
@@ -64,6 +65,9 @@ export default function App() {
         <div className="col">
           <BlockDiagram cpu={sim.cpu} last={sim.last} />
           <LedRow value={sim.cpu.out} />
+        </div>
+        <div className="info-col">
+          <StepInfo cpu={sim.cpu} last={sim.last} history={sim.history} />
         </div>
       </main>
     </div>

@@ -3,6 +3,16 @@ import { createCpu, hex, tick, type CpuState, type TickInfo } from '../sap1/cpu'
 
 export type Mode = 'idle' | 'step' | 'run';
 
+/** One executed T-state, kept for the step log. */
+export interface HistoryEntry {
+  id: number;
+  instruction: number; // 1-based instruction number
+  t: number;
+  text: string;
+}
+
+const MAX_HISTORY = 120;
+
 /** Safety net so a program without HLT cannot run forever. */
 const MAX_INSTRUCTIONS = 256;
 /** Clock speed range in T-states per second. */
@@ -12,6 +22,7 @@ const DEFAULT_CLOCK_SPEED = 3;
 
 export function useSimulator() {
   const cpuRef = useRef<CpuState>(createCpu());
+  const historyId = useRef(0);
 
   const [cpu, setCpu] = useState<CpuState>(cpuRef.current);
   const [last, setLast] = useState<TickInfo | null>(null);
@@ -19,6 +30,7 @@ export function useSimulator() {
   const [loaded, setLoaded] = useState(false);
   const [labels, setLabels] = useState<string[]>(() => Array(16).fill(''));
   const [notice, setNotice] = useState<string | null>(null);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [clockSpeed, setClockSpeed] = useState(DEFAULT_CLOCK_SPEED);
 
   /** Execute one T-state. Returns true when the current mode should stop afterwards. */
@@ -30,6 +42,10 @@ export function useSimulator() {
     cpuRef.current = next;
     setCpu(next);
     setLast(info);
+    setHistory((h) => [
+      ...h.slice(-(MAX_HISTORY - 1)),
+      { id: historyId.current++, instruction: before.instructionCount + 1, t: info.t, text: info.text },
+    ]);
 
     if (next.halted) return true;
     if (m === 'step' && next.t === 1) return true; // instruction finished
@@ -63,6 +79,7 @@ export function useSimulator() {
     cpuRef.current = fresh;
     setCpu(fresh);
     setLast(null);
+    setHistory([]);
     setMode('idle');
     setNotice(null);
     setLabels(programLabels);
@@ -75,6 +92,7 @@ export function useSimulator() {
     cpuRef.current = fresh;
     setCpu(fresh);
     setLast(null);
+    setHistory([]);
     setMode('idle');
     setNotice(null);
     setLabels(Array(16).fill(''));
@@ -96,7 +114,7 @@ export function useSimulator() {
             : 'Ready';
 
   return {
-    cpu, last, mode, loaded, labels, notice, status,
+    cpu, last, history, mode, loaded, labels, notice, status,
     clockSpeed, setClockSpeed,
     minClockSpeed: MIN_CLOCK_SPEED, maxClockSpeed: MAX_CLOCK_SPEED,
     step: () => start('step'),

@@ -47,6 +47,7 @@ export function HelpManual({ onClose }: Props) {
             <section id="manual-display"><h3>Reading the display</h3><ul>
               <li><b>Memory</b> shows addresses and contents. The current program counter and memory access are highlighted.</li>
               <li><b>Registers &amp; W-Bus</b> shows register values and active data transfers. The step description names the current T-state.</li>
+              <li><b>What&apos;s happening</b> explains the current T-state in plain words: which register sends data, which one receives it, and which control signals are active. The step log below it lists every step so far.</li>
               <li><b>Output</b> shows the result as eight LEDs, binary, hexadecimal, and decimal.</li>
               <li><b>Subtraction</b> uses 8-bit two&apos;s complement inside the adder/subtractor. Because the loader blocks results below <code>00H</code> or above <code>FFH</code>, the output never wraps.</li>
             </ul></section>

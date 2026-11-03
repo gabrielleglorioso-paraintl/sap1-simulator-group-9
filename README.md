@@ -5,6 +5,8 @@ CPE 402 Computer Architecture and Organization final project. It runs in the bro
 registers, the W-bus, RAM, the T-states and an 8-LED output display while a program executes through the
 fetch-decode-execute cycle.
 
+The initial program structure and simulator logic were generated with AI assistance (Claude), then reviewed, tested, and extended by the group (theme, layout, input, features).
+
 ## Features
 
 | Requirement | Where it is |
@@ -16,8 +18,10 @@ fetch-decode-execute cycle.
 | Load program, Step, Run, Reset | **Load Program** and **Controls** panels |
 | Fetch-decode-execute cycle | A line under the bus banner names the current T-state, e.g. `T3 (fetch): RAM[0H] = 09H -> W-bus -> IR` |
 | Adder/Subtractor with 2's complement | The sigma box shows `A + B (Su=0)` or `A - B (Su=1)` |
+| Step-by-step explanation | **What's happening** panel: current instruction, T1-T6 timeline, a plain-language explanation of the step (with the real values), the active control signals, and a log of every step |
 | Adjustable clock speed (optional) | **Clock Speed** slider, 1-10 T-states per second |
 | Micro-Step | Advances one T-state at a time so every bus transfer can be inspected |
+| Responsive layout | On a desktop or fullscreen window (1100px+ wide) everything fits the screen without page scrolling: Memory and Clock Speed on the left, Registers & W-Bus and LEDs in the middle, the explanation panel in a tall column on the right. On phones the Controls stay pinned to the top with the registers and LEDs right below them |
 | Help | **Help** button in the header opens a manual (Esc or Close to dismiss) |
 
 ### Instruction set
@@ -100,9 +104,11 @@ src/
   sap1/
     cpu.ts            # CPU model: registers, RAM, ALU, controller, tick() per T-state (no UI code)
     programs.ts       # expression -> machine code, safe address range, range check, hex input rules
+    explain.ts        # plain-language explanation of each T-state (used by the info panel)
     cpu.test.ts       # unit tests: instruction cycle, expressions, input rules
+    explain.test.ts   # unit tests for the step explanations
   hooks/
-    useSimulator.ts   # clock, Step / Micro-Step / Run / Pause / Reset, clock speed
+    useSimulator.ts   # clock, Step / Micro-Step / Run / Pause / Reset, clock speed, step history
   components/
     ProgramLoader.tsx # formula builder
     Controls.tsx      # Step, Micro-Step, Run/Pause, Reset, status
@@ -111,6 +117,7 @@ src/
     RegisterBox.tsx   # one register panel
     MemoryTable.tsx   # 16 x 8 RAM viewer
     LedRow.tsx        # 8 output LEDs
+    StepInfo.tsx      # "What's happening" panel + step log
     HelpManual.tsx    # help dialog
   App.tsx, main.tsx, styles.css
 ```
@@ -133,8 +140,8 @@ the last tick did.
 
 | Member | Role |
 | --- | --- |
-| _Name_ | _e.g. CPU logic_ |
-| _Name_ | _e.g. GUI / bus visualisation_ |
-| _Name_ | _e.g. program loader_ |
-| _Name_ | _e.g. testing and documentation_ |
-| _Name_ | _e.g. demo recording_ |
+| Glorioso, Gabrielle DC. | Repository setup, integration and Layout & Logic |
+| Silvestre, Jan Dillinger DL. | GUI / Visualisation|
+| Roxas, Joseph Louis E. | Help Manual |
+| Fabian, Gabriel Carlos G. | Testing |
+| Alterado, Baron Jordan A. | Demo recording |
