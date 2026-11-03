@@ -1,0 +1,4 @@
+# Normalise line endings so Windows (CRLF) and Linux/macOS (LF) teammates do not create noisy diffs.
+* text=auto eol=lf
+*.png binary
+*.jpg binary

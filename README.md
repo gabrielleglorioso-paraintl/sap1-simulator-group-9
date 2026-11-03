@@ -1,21 +1,24 @@
 # SAP-1 Simulator
 
-A web-based simulator of Malvino's **SAP-1 (Simple-As-Possible 1)** computer, built for the
+A web-based simulator of Malvino's **SAP-1 (Simple-As-Possible 1)** computer, built by **Group 9** for the
 CPE 402 Computer Architecture and Organization final project. It runs in the browser and shows the
-registers, the W-bus, RAM, the controller-sequencer and an 8-LED output display while a program executes
-through the fetch-decode-execute cycle.
+registers, the W-bus, RAM, the T-states and an 8-LED output display while a program executes through the
+fetch-decode-execute cycle.
 
 ## Features
 
 | Requirement | Where it is |
 | --- | --- |
 | Register panels: PC, MAR, IR, A, B, Output (binary + hex, live) | **Registers & W-Bus** panel |
-| RAM viewer, 16 addresses with contents, accessed address highlighted | **Memory** panel (MAR row = amber, RAM-read row = green, PC marker) |
-| Visual W-bus showing data movement | Animated central bus; source box glows green (`-> BUS`), destination amber (`<- BUS`); banner shows value and `SOURCE -> DEST` |
-| 8 LEDs for the Output Register | **Binary Output** panel (with binary and hex readout) |
+| RAM viewer, 16 addresses with contents, accessed address highlighted | **Memory** table (columns ADDR, MEANING, BINARY, HEX). MAR row = amber, RAM-read row = teal, `PC` tag marks the next fetch |
+| Visual W-bus showing data movement | Central bus with animated flow. The source box is teal (`-> BUS`), the destination amber (`<- BUS`); the banner shows the bus value and `SOURCE -> DEST` |
+| 8 LEDs for the Output Register | **Output (8 LEDs)** panel, with binary, hex and decimal readout |
 | Load program, Step, Run, Reset | **Load Program** and **Controls** panels |
 | Fetch-decode-execute cycle | A line under the bus banner names the current T-state, e.g. `T3 (fetch): RAM[0H] = 09H -> W-bus -> IR` |
 | Adder/Subtractor with 2's complement | The sigma box shows `A + B (Su=0)` or `A - B (Su=1)` |
+| Adjustable clock speed (optional) | **Clock Speed** slider, 1-10 T-states per second |
+| Micro-Step | Advances one T-state at a time so every bus transfer can be inspected |
+| Help | **Help** button in the header opens a manual (Esc or Close to dismiss) |
 
 ### Instruction set
 
@@ -29,26 +32,37 @@ through the fetch-decode-execute cycle.
 
 Every instruction takes six T-states: **T1-T3 fetch** (`PC -> MAR`, `PC++`, `RAM -> IR`) and **T4-T6 execute**.
 
-### The three formulas
+### Entering a formula
 
-The user enters the values (hex, 00-FF); nothing is hard-coded in the program. The pre-filled numbers
-are the examples from the Unit 2 slides.
+Nothing is hard-coded: the user builds the formula in the **Load Program** panel.
 
-| Formula | Source | Data cells | Default inputs | Result |
-| --- | --- | --- | --- | --- |
-| `A + B - C` | Sample program | 9H, AH, BH | 25H, 05H, 23H | `07H` |
-| `A - B + C` | Example 1 | 8H, 9H, AH | 21H, 02H, 0AH | `29H` |
-| `A + B + C - D` | Example 2 | 8H-BH | 01H, 02H, 03H, 0AH | `FCH` (= -4 in 2's complement) |
+- **2 to 5 values**, each 1-2 hex digits (`00`-`FF`). Characters other than `0-9` and `A-F` are rejected as you type.
+  Use **+ Add number** and **x** to change how many values there are.
+- A **+ / -** dropdown before every value after the first.
+- **Data starts at**: a dropdown that lists only the addresses where the data fits without overlapping the program
+  (with n values: `n+2` up to `16-n`, e.g. 5H-DH for three values).
+- A live preview such as `25H + 05H - 23H = 07H`.
+- **Range check**: if the running total would go below `00H` or above `FFH` at any step, a message explains why and
+  **Load Program** stays disabled, so the output is never a wrapped value.
 
-The loader generates the program for the chosen formula (e.g. `LDA 9H / ADD AH / SUB BH / OUT / HLT`),
-shows the listing and machine code, and writes it to RAM. After the run it compares the output with the
-expected result.
+The first value becomes `LDA`, each later value becomes `ADD` or `SUB`, followed by `OUT` and `HLT`. After a run, the
+panel compares the output with the expected result.
+
+Example formulas used for the demonstration:
+
+| Formula | Data starts at | Program | Result |
+| --- | --- | --- | --- |
+| `25H + 05H - 23H` | 9H | `LDA 9H / ADD AH / SUB BH / OUT / HLT` | `07H` (`0000 0111`) |
+| `21H - 02H + 0AH` | 8H | `LDA 8H / SUB 9H / ADD AH / OUT / HLT` | `29H` |
+| `10H + 20H - 05H + 01H` | CH | `LDA CH / ADD DH / SUB EH / ADD FH / OUT / HLT` | `2CH` |
 
 ### How to use
 
-1. Choose a formula and type the values, then press **Load Program into RAM**.
+1. Type the values, choose `+` or `-` between them, pick the data address, then press **Load Program**.
 2. **Step** runs one whole instruction (T1-T6), animated one T-state at a time.
-3. **Run** executes until `HLT`. **Pause** stops it. **Reset** clears all registers and RAM.
+3. **Micro-Step** advances a single T-state.
+4. **Run** executes until `HLT`; **Pause** stops it. Use the **Clock Speed** slider to speed up or slow down.
+5. **Reset** clears all registers and RAM. Load a program again to continue.
 
 ## Install and run
 
@@ -84,12 +98,20 @@ npm test           # run the unit tests (Vitest)
 ```
 src/
   sap1/
-    cpu.ts          # CPU model: registers, RAM, ALU, controller, tick() per T-state (no UI code)
-    programs.ts     # formula -> machine-code generator, input parsing
-    cpu.test.ts     # unit tests for the instruction cycle and the three formulas
+    cpu.ts            # CPU model: registers, RAM, ALU, controller, tick() per T-state (no UI code)
+    programs.ts       # expression -> machine code, safe address range, range check, hex input rules
+    cpu.test.ts       # unit tests: instruction cycle, expressions, input rules
   hooks/
-    useSimulator.ts # clock, Step / Run / Reset
-  components/                           # ProgramLoader, Controls
+    useSimulator.ts   # clock, Step / Micro-Step / Run / Pause / Reset, clock speed
+  components/
+    ProgramLoader.tsx # formula builder
+    Controls.tsx      # Step, Micro-Step, Run/Pause, Reset, status
+    ClockSpeed.tsx    # speed slider
+    BlockDiagram.tsx  # registers on both sides of the W-bus
+    RegisterBox.tsx   # one register panel
+    MemoryTable.tsx   # 16 x 8 RAM viewer
+    LedRow.tsx        # 8 output LEDs
+    HelpManual.tsx    # help dialog
   App.tsx, main.tsx, styles.css
 ```
 
@@ -99,11 +121,13 @@ the last tick did.
 
 ## Design notes
 
-- Subtraction is implemented as `A + (~B + 1)` on 8 bits (2's complement), and all results wrap at 8 bits.
-  `01H + 02H + 03H - 0AH` therefore gives `FCH`, which the signed readout shows as -4.
+- Subtraction is implemented as `A + (~B + 1)` on 8 bits (2's complement). The CPU wraps at 8 bits like real
+  hardware (`01H + 02H + 03H - 0AH` would give `FCH`, i.e. -4), but the loader refuses such inputs so the
+  displayed output is always a clean `00H`-`FFH` value.
 - The unused operand nibble of `OUT` and `HLT` is filled with `1111`, as in the Unit 2 slides.
 - T-states follow Malvino's SAP-1 microprogram (T1 `Ep Lm`, T2 `Cp`, T3 `CE Li`, then the execute steps).
 - A program without `HLT` is stopped after 256 instructions, and an illegal opcode halts the machine with an error.
+- `.gitattributes` normalises line endings so teammates on Windows and macOS/Linux get clean diffs.
 
 ## Team
 

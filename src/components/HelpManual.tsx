@@ -22,8 +22,8 @@ export function HelpManual({ onClose }: Props) {
         <div className="manual__body">
           <article className="manual__content">
             <section id="manual-start"><h3>Getting started</h3>
-              <p>This simulator models SAP-1, an 8-bit teaching computer. Choose an arithmetic formula, enter hexadecimal values, and select <b>Load Program into RAM</b>. The generated instructions and data appear in the memory table.</p>
-              <ol><li>Choose a formula and enter values from <code>00H</code> to <code>FFH</code>.</li><li>Load the program into RAM.</li><li>Use <b>Step</b> or <b>Run</b>, then check the output LEDs and value.</li></ol>
+              <p>This simulator models SAP-1, an 8-bit teaching computer. Build an arithmetic formula by entering hexadecimal values and choosing <b>+</b> or <b>&minus;</b> between them, then select <b>Load Program</b>. The generated instructions and data appear in the memory table.</p>
+              <ol><li>Enter two to five values from <code>00H</code> to <code>FFH</code> and pick the operators between them.</li><li>Choose where the data starts in RAM, then load the program.</li><li>Use <b>Step</b> or <b>Run</b>, then check the output LEDs and value.</li></ol>
             </section>
             <section id="manual-controls"><h3>Run controls</h3><dl>
               <dt>Step</dt><dd>Completes one instruction, advancing through its six T-states.</dd>
@@ -33,7 +33,7 @@ export function HelpManual({ onClose }: Props) {
               <dt>Clock speed</dt><dd>Adjusts how quickly the simulator advances while running.</dd>
             </dl></section>
             <section id="manual-programs"><h3>Programs and values</h3>
-              <p>Enter two to five hexadecimal values, with addition or subtraction between each pair. Values are stored in RAM after the instructions. Each running result must stay in <code>00H&ndash;FFH</code>.</p>
+              <p>Enter two to five hexadecimal values, with addition or subtraction between each pair. Values are stored in RAM after the instructions, starting at the address you choose from the allowed list. Each running result must stay in <code>00H&ndash;FFH</code>; the loader shows a message and stays disabled if it would not.</p>
               <p>Hexadecimal digits are <code>0&ndash;9</code> and <code>A&ndash;F</code>. For example, <code>25H + 05H - 23H</code> produces <code>07H</code>.</p>
             </section>
             <section id="manual-instructions"><h3>Instruction set</h3><dl>
@@ -47,8 +47,8 @@ export function HelpManual({ onClose }: Props) {
             <section id="manual-display"><h3>Reading the display</h3><ul>
               <li><b>Memory</b> shows addresses and contents. The current program counter and memory access are highlighted.</li>
               <li><b>Registers &amp; W-Bus</b> shows register values and active data transfers. The step description names the current T-state.</li>
-              <li><b>Output</b> shows the result as eight LEDs, binary, and hexadecimal.</li>
-              <li><b>Subtraction</b> uses 8-bit two&apos;s complement. A wrapped result such as <code>FCH</code> represents &minus;4.</li>
+              <li><b>Output</b> shows the result as eight LEDs, binary, hexadecimal, and decimal.</li>
+              <li><b>Subtraction</b> uses 8-bit two&apos;s complement inside the adder/subtractor. Because the loader blocks results below <code>00H</code> or above <code>FFH</code>, the output never wraps.</li>
             </ul></section>
           </article>
         </div>
