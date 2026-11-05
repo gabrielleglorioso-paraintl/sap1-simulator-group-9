@@ -1,6 +1,6 @@
 # SAP-1 Simulator
 
-**Live demo:** https://your-project-name.vercel.app
+**Live demo:** https://sap1-group9.vercel.app
 
 A web-based simulator of Malvino's **SAP-1 (Simple-As-Possible 1)** computer, built by **Group 9** for the
 CPE 402 Computer Architecture and Organization final project. It runs in the browser and shows the
